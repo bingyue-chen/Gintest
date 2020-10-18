@@ -1,0 +1,20 @@
+name: Test
+
+on:
+  push:
+    branches:
+    - develop
+    - master
+
+jobs:
+
+  test:
+    name: Application Test
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Run go test
+      uses: actions/setup-go@v2
+      with:
+        go-version: '^1.15.2'
+    - run: go test ./tests/... -v

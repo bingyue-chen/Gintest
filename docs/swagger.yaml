@@ -1,0 +1,390 @@
+basePath: /api/v1
+definitions:
+  entities.ErrorBag:
+    properties:
+      message:
+        type: string
+    type: object
+  entities.ResponseBag:
+    type: object
+  entities.User:
+    properties:
+      created_at:
+        type: integer
+      email:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: integer
+      is_verified:
+        type: boolean
+      last_name:
+        type: string
+      updated_at:
+        type: integer
+    type: object
+host: gintest.snowcookie.moe
+info:
+  contact:
+    email: snow.shanalike@gmail.com
+    name: Bing Yue Chen
+    url: https://github.com/bingyue-chen
+  description: This is a gin practice project.
+  license: {}
+  title: Gintest
+  version: "0.1"
+paths:
+  /user/{id}:
+    patch:
+      consumes:
+      - application/json
+      description: Update User's Profile
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: User First Name
+        in: body
+        name: first_name
+        schema:
+          type: string
+      - description: User Last Name
+        in: body
+        name: last_name
+        schema:
+          type: string
+      - description: User Password
+        in: body
+        name: password
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/entities.ResponseBag'
+            - properties:
+                data:
+                  allOf:
+                  - type: object
+                  - properties:
+                      user:
+                        $ref: '#/definitions/entities.User'
+                    type: object
+                status:
+                  type: string
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/entities.ResponseBag'
+            - properties:
+                error:
+                  $ref: '#/definitions/entities.ErrorBag'
+                status:
+                  type: string
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/entities.ResponseBag'
+            - properties:
+                error:
+                  $ref: '#/definitions/entities.ErrorBag'
+                status:
+                  type: string
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/entities.ResponseBag'
+            - properties:
+                error:
+                  $ref: '#/definitions/entities.ErrorBag'
+                status:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/entities.ResponseBag'
+            - properties:
+                error:
+                  $ref: '#/definitions/entities.ErrorBag'
+                status:
+                  type: string
+              type: object
+      security:
+      - JWTAuth: []
+      summary: Update User's Profile
+  /users/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrie User's Profile
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/entities.ResponseBag'
+            - properties:
+                data:
+                  allOf:
+                  - type: object
+                  - properties:
+                      user:
+                        $ref: '#/definitions/entities.User'
+                    type: object
+                status:
+                  type: string
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/entities.ResponseBag'
+            - properties:
+                error:
+                  $ref: '#/definitions/entities.ErrorBag'
+                status:
+                  type: string
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/entities.ResponseBag'
+            - properties:
+                error:
+                  $ref: '#/definitions/entities.ErrorBag'
+                status:
+                  type: string
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/entities.ResponseBag'
+            - properties:
+                error:
+                  $ref: '#/definitions/entities.ErrorBag'
+                status:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/entities.ResponseBag'
+            - properties:
+                error:
+                  $ref: '#/definitions/entities.ErrorBag'
+                status:
+                  type: string
+              type: object
+      security:
+      - JWTAuth: []
+      summary: Retrie User's Profile
+  /users/login:
+    post:
+      consumes:
+      - application/json
+      description: Validate email and password, then generate api key.
+      parameters:
+      - description: User Email
+        in: body
+        name: email
+        required: true
+        schema:
+          type: string
+      - description: User Password
+        in: body
+        name: password
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/entities.ResponseBag'
+            - properties:
+                data:
+                  allOf:
+                  - type: object
+                  - properties:
+                      token:
+                        type: string
+                      token_type:
+                        type: string
+                      user:
+                        $ref: '#/definitions/entities.User'
+                    type: object
+                status:
+                  type: string
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/entities.ResponseBag'
+            - properties:
+                error:
+                  $ref: '#/definitions/entities.ErrorBag'
+                status:
+                  type: string
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/entities.ResponseBag'
+            - properties:
+                error:
+                  $ref: '#/definitions/entities.ErrorBag'
+                status:
+                  type: string
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/entities.ResponseBag'
+            - properties:
+                error:
+                  $ref: '#/definitions/entities.ErrorBag'
+                status:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/entities.ResponseBag'
+            - properties:
+                error:
+                  $ref: '#/definitions/entities.ErrorBag'
+                status:
+                  type: string
+              type: object
+      summary: User Login
+  /users/singup:
+    post:
+      consumes:
+      - application/json
+      description: Create new user with email, password and name.
+      parameters:
+      - description: User Email
+        in: body
+        name: email
+        required: true
+        schema:
+          type: string
+      - description: User Password
+        in: body
+        name: password
+        required: true
+        schema:
+          type: string
+      - description: User Name
+        in: body
+        name: name
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/entities.ResponseBag'
+            - properties:
+                data:
+                  allOf:
+                  - type: object
+                  - properties:
+                      token:
+                        type: string
+                      token_type:
+                        type: string
+                      user:
+                        $ref: '#/definitions/entities.User'
+                    type: object
+                status:
+                  type: string
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/entities.ResponseBag'
+            - properties:
+                error:
+                  $ref: '#/definitions/entities.ErrorBag'
+                status:
+                  type: string
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/entities.ResponseBag'
+            - properties:
+                error:
+                  $ref: '#/definitions/entities.ErrorBag'
+                status:
+                  type: string
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/entities.ResponseBag'
+            - properties:
+                error:
+                  $ref: '#/definitions/entities.ErrorBag'
+                status:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/entities.ResponseBag'
+            - properties:
+                error:
+                  $ref: '#/definitions/entities.ErrorBag'
+                status:
+                  type: string
+              type: object
+      summary: User Registration
+securityDefinitions:
+  JWTAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

@@ -1,58 +1,85 @@
 package main
 
 import (
+	"context"
+	"log"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
+	"Gintest/src/middlewares"
+	"Gintest/src/routes"
+	"Gintest/src/utilities"
 	"github.com/gin-gonic/gin"
 )
 
-var DB = make(map[string]string)
+// @title Gintest
+// @version 0.1
+// @description This is a gin practice project.
+
+// @contact.name Bing Yue Chen
+// @contact.url https://github.com/bingyue-chen
+// @contact.email snow.shanalike@gmail.com
+
+// @host gintest.snowcookie.moe
+// @BasePath /api/v1
+
+// @securityDefinitions.apikey JWTAuth
+// @in header
+// @name Authorization
 
 func main() {
-	// Disable Console Color
-	// gin.DisableConsoleColor()
-	r := gin.Default()
 
-	// Ping test
-	r.GET("/ping", func(c *gin.Context) {
-		c.String(200, "pong")
-	})
+	router := gin.Default()
 
-	// Get user value
-	r.GET("/user/:name", func(c *gin.Context) {
-		user := c.Params.ByName("name")
-		value, ok := DB[user]
-		if ok {
-			c.JSON(200, gin.H{"user": user, "value": value})
-		} else {
-			c.JSON(200, gin.H{"user": user, "status": "no value"})
+	router.Use(middlewares.ErrorsHandler(utilities.Getenv("GIN_DEBUG")))
+
+	api_router := routes.ApiRouter{Router: router}
+
+	api_router.Setup()
+
+	//router.Run(":" + utilities.Getenv("GIN_PORT"))
+
+	/*
+		|--------------------------------------------------------------------------
+		| Graceful shutdown or restart
+		|--------------------------------------------------------------------------
+		| Follow gin document:
+		| https://github.com/gin-gonic/gin#graceful-shutdown-or-restart
+	*/
+
+	srv := &http.Server{
+		Addr:    ":" + utilities.Getenv("GIN_PORT"),
+		Handler: router,
+	}
+
+	// Initializing the server in a goroutine so that
+	// it won't block the graceful shutdown handling below
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("listen: %s\n", err)
 		}
-	})
+	}()
 
-	// Authorized group (uses gin.BasicAuth() middleware)
-	// Same than:
-	// authorized := r.Group("/")
-	// authorized.Use(gin.BasicAuth(gin.Credentials{
-	//	  "foo":  "bar",
-	//	  "manu": "123",
-	//}))
-	authorized := r.Group("/", gin.BasicAuth(gin.Accounts{
-		"foo":  "bar", // user:foo password:bar
-		"manu": "123", // user:manu password:123
-	}))
+	// Wait for interrupt signal to gracefully shutdown the server with
+	// a timeout of 5 seconds.
+	quit := make(chan os.Signal)
+	// kill (no param) default send syscall.SIGTERM
+	// kill -2 is syscall.SIGINT
+	// kill -9 is syscall.SIGKILL but can't be catch, so don't need add it
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	log.Println("Shutting down server...")
 
-	authorized.POST("admin", func(c *gin.Context) {
-		user := c.MustGet(gin.AuthUserKey).(string)
+	// The context is used to inform the server it has 5 seconds to finish
+	// the request it is currently handling
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Fatal("Server forced to shutdown:", err)
+	}
 
-		// Parse JSON
-		var json struct {
-			Value string `json:"value" binding:"required"`
-		}
-
-		if c.Bind(&json) == nil {
-			DB[user] = json.Value
-			c.JSON(200, gin.H{"status": "ok"})
-		}
-	})
-
-	// Listen and Server in 0.0.0.0:8080
-	r.Run(":8080")
+	log.Println("Server exiting")
 }
