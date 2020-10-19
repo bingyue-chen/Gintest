@@ -3,7 +3,7 @@ services:
 
     postgres:
       image: postgres:13
-      container_name: datacollector-postgres
+      container_name: gintest-postgres
       environment:
         - "POSTGRES_DB=${DB_DATABASE}"
         - "POSTGRES_USER=${DB_USERNAME}"
@@ -11,23 +11,17 @@ services:
       volumes:
         - "${DOCKER_PGSQL_DATA}:/var/lib/postgresql/data"
 
-    redis:
-      image: redis:alpine
-      container_name: datacollector-redis
-
     application:
       build:
         context: .
         dockerfile: docker/development/golang/Dockerfile
-      container_name: datacollector-application
+      container_name: gintest-application
       working_dir: /application
       volumes:
           - ./:/application
       depends_on:
         - postgres
-        - redis
       links:
         - postgres
-        - redis
       ports:
         - "${DOCKER_APP_PORT}:${GIN_PORT}"
